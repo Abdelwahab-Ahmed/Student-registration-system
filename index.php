@@ -1,4 +1,6 @@
 <?php
+require_once 'connection.php';
+
 $errors = [];
 $firstName = "";
 $lastName = "";
@@ -68,15 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (empty($errors)) {
-      $host = "localhost";
-      $username = "root";
-      $password = "";
-      $dbname = "users";
-      
       try {
-        $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
         $hashedPass = password_hash($password, PASSWORD_DEFAULT);
         $sql = "INSERT INTO users (FirstName, LastName, Email, Password, Age, Gender, Phone) VALUES (:firstName, :lastName, :email, :password, :age, :gender, :phone)";
         $stmt = $conn->prepare($sql);
@@ -86,19 +80,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ':email'     => $email,
             ':password' => $hashedPass,
             ':age'      => (int)$age,
-            ':gender'   => $gender, 
+            ':gender'   => $gender,
             ':phone'    => $phone
         ]);
-        
+
         $successMessage = htmlspecialchars($firstName) . " " . htmlspecialchars($lastName) . ", Your account was created successfully!";
-        
+
         $firstName = "";
         $lastName = "";
         $email = "";
         $age = "";
         $gender = "";
         $phone = "";
-      } catch(PDOException $e) {
+      } catch (PDOException $e) {
         $errors["db"] = "Database error: " . $e->getMessage();
       }
     }
